@@ -6,6 +6,7 @@ class Parser:
         self.file = "DB.xlsx"
         self.DB = openpyxl.load_workbook(self.file)
         self.sheet = self.DB['Лист1']
+        self.output = []
         self.parse_substance()
 
     def parse_substance(self):
@@ -31,6 +32,7 @@ class Parser:
         return self.allSubstance
 
     def parse_env(self, substance):
+        self.output += [substance]
         # indexChoice ищет границы элемента
         self.indexChoice = []
         for i in range(len(self.aboutSubstance)):
@@ -52,14 +54,14 @@ class Parser:
         return self.allEnv
 
     def parse_temp(self, env):
-        print(self.aboutEnv)
+        self.output += [env]
 
         for i in range(len(self.aboutEnv)):
             if (len(self.aboutEnv) == 1) or (i == (len(self.aboutEnv) - 1)):
                 pass
             elif len(self.aboutEnv) > 1:
                 self.indexChoice[0] = max(self.indexChoice[0], self.aboutEnv[i][1])
-                self.indexChoice[1] = min(self.indexChoice[1], str(int(self.aboutEnv[i + 1][1])+1))
+                self.indexChoice[1] = min(self.indexChoice[1], str(int(self.aboutEnv[i + 1][1]) + 1))
 
         self.aboutTemp = []
         for i in range(int(self.indexChoice[0]), int(self.indexChoice[1])):
@@ -83,12 +85,12 @@ class Parser:
             self.presSameTemp = []
             for j in range(int(self.indexChoice[0]), int(self.indexChoice[1])):
                 if self.allTemp[i] == self.sheet["C" + str(j)].value:
-                    self.presSameTemp += [[self.sheet["D" + str(j)].value, str(j)]]
-            self.tempDicti[self.allTemp[i]] = self.presSameTemp
-
+                    self.presSameTemp += [[str(self.sheet["D" + str(j)].value), str(self.sheet["E" + str(j)].value), str(j)]]
+            self.tempDicti[str(self.allTemp[i])] = self.presSameTemp
         return self.allTemp
 
     def parse_press(self, temp):
+        self.output += [temp]
         self.aboutPress = self.tempDicti[temp]
         self.allPress = []
 
@@ -101,8 +103,23 @@ class Parser:
         return self.allPress
 
     def parse_conc(self, press):
+        self.output += [press]
+        self.aboutConc = []
+        self.allConc = []
+        for i in range(len(self.tempDicti[self.output[2]])):
+            if press == self.tempDicti[self.output[2]][i][0]:
+                self.allConc += [self.tempDicti[self.output[2]][i][1]]
+                self.aboutConc += [self.tempDicti[self.output[2]][i]]
 
-        pass
+        self.allConc = set(self.allConc)
+        self.allConc = list(self.allConc)
+        return self.allConc
 
-# dicti = {"<250": [["<1,6", "4"], ["<30", "11"]]}
-# {'< 200': [['< 30', '8']], '< 225': [['< 5', '5']], '< 230': [['< 10', '7']], '< 250': [['< 1,6', '4'], ['< 30', '11']], '< 290': [['< 1,6', '6']], '< 345': [['< 10', '10']], '< 475': [['< 1,6', '9']], '< 550': [['< 30', '12']], '< 600': [['Не ограничено', '13']]}
+    def output_table(self, conc):
+        self.output += [conc]
+        for i in range(len(self.aboutConc)):
+            if self.output[4] == self.aboutConc[i][1]:
+                self.output += [self.sheet["F" + str(self.aboutConc[i][2])].value]
+                break
+
+        return self.output
