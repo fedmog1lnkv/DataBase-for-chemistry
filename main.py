@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from parser import Parser
 
+
 class app:
     def __init__(self, master):
         self.master = master
@@ -14,7 +15,7 @@ class app:
             i.destroy()
         self.frame1 = Frame(self.master, width=300, height=300)
         self.frame1.pack()
-        self.text = ttk.Label(self.frame1, text ="Поиск веществ")
+        self.text = ttk.Label(self.frame1, text="Поиск веществ")
         self.text.pack()
         self.next_btn = ttk.Button(self.frame1, text="Начать", command=self.page_1)
         self.next_btn.pack()
@@ -34,8 +35,6 @@ class app:
 
         self.next_btn = ttk.Button(self.frame2, text="Далее", command=self.page_2)
         self.next_btn.pack()
-
-
 
     def page_2(self):
         self.choice_substance = self.choice_substance.get()
@@ -88,15 +87,30 @@ class app:
         self.choice_press = ttk.Combobox(self.frame5, values=self.Ecxel.parse_press(self.choice_temp))
         self.choice_press.pack()
 
-        self.next_btn = ttk.Button(self.frame5, text="Далее", command=self.page_4)
+        self.next_btn = ttk.Button(self.frame5, text="Далее", command=self.page_5)
         self.next_btn.pack()
 
     def page_5(self):
         self.choice_press = self.choice_press.get()
-        print(self.choice_press)
 
         for i in self.master.winfo_children():
             i.destroy()
+
+        self.frame6 = Frame(self.master, width=300, height=300)
+        self.frame6.pack()
+
+        self.text = ttk.Label(self.frame6, text="Выберите концентрацию")
+        self.text.pack()
+
+        self.choice_press = ttk.Combobox(self.frame6, values=self.Ecxel.parse_conc(self.choice_press))
+        self.choice_press.pack()
+
+        self.next_btn = ttk.Button(self.frame6, text="Далее", command=self.page_6)
+        self.next_btn.pack()
+
+    def page_6(self):
+        pass
+
 window = Tk()
 app(window)
 window.mainloop()
