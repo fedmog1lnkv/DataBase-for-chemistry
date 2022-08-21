@@ -5,7 +5,7 @@ class Parser:
     def __init__(self):
         self.file = "DB.xlsx"
         self.DB = openpyxl.load_workbook(self.file)
-        self.sheet = self.DB['Лист1']
+        self.sheet = self.DB['Главная таблица']
         self.output = []
         self.parse_substance()
 
@@ -85,7 +85,8 @@ class Parser:
             self.presSameTemp = []
             for j in range(int(self.indexChoice[0]), int(self.indexChoice[1])):
                 if self.allTemp[i] == self.sheet["C" + str(j)].value:
-                    self.presSameTemp += [[str(self.sheet["D" + str(j)].value), str(self.sheet["E" + str(j)].value), str(j)]]
+                    self.presSameTemp += [
+                        [str(self.sheet["D" + str(j)].value), str(self.sheet["E" + str(j)].value), str(j)]]
             self.tempDicti[str(self.allTemp[i])] = self.presSameTemp
         return self.allTemp
 
@@ -123,3 +124,22 @@ class Parser:
                 break
 
         return self.output
+
+    def materials_text(self, materialNum):
+        self.sheet = self.DB['Материалы']
+
+        self.materials = materialNum.split(" ")
+        self.materialsText = ""
+
+        self.materialDicti = {}
+        for i in range(2, 1000):
+            if self.sheet["A" + str(i)].value != None:
+                self.materialDicti[str(self.sheet["A" + str(i)].value)] = str(self.sheet["B" + str(i)].value)
+            else:
+                break
+        for material in self.materials:
+            for key in self.materialDicti:
+                if material == key:
+                    self.materialsText += self.materialDicti[key] + ", "
+
+        return self.materialsText[:-2]
