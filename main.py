@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import Text
 from tkinter import ttk
 from tkinter.ttk import Combobox
+import tkinter.filedialog as fd
+import tkinter.messagebox as mb
 
 from parser import Parser
 
@@ -13,31 +15,67 @@ class app:
 
     def __init__(self, master):
         self.master = master
-
         self.start()
 
     def start(self):
         self.master.geometry("700x200")
-        self.Ecxel = Parser()
+
+        with open("files/config.txt", "r") as f:
+            s = f.readline()
+            if s != "":
+                self.filePath = s
+            else:
+                self.filePath = "Выберите файл"
+
         for i in self.master.winfo_children():
             i.destroy()
         self.frame1 = Frame(self.master, width=700, height=200, background=bg)
         self.frame1.place(relx=0, rely=0)
 
-        self.text = Label(self.frame1, text="Поиск веществ", font=("Geneva", 14), background=bg)
-        self.text.place(relx=0.10, rely=0.15)
 
-        self.next_btn = Button(self.frame1, text="Начать", background="#6200EE", foreground="#FFFFFF", bd=1,
-                               font=("Geneva", 10),
-                               command=self.page_1)
-        self.next_btn.place(relx=0.11, rely=0.30)
+        self.text = Label(self.frame1, text="Автоматизированная информационная система\nпо выбору конструкционных материалов,\nиспользуемых в процессах химии и нефтехимии", font=("Geneva", 14), background=bg)
+        self.text.place(relx=0.20, rely=0.15)
 
-        self.exit_btn = Button(self.frame1, text="Выход", background="#6200EE", foreground="#FFFFFF", bd=1,
-                               font=("Geneva", 10),
-                               command=self.close_app)
-        self.exit_btn.place(relx=0.70, rely=0.75)
+        self.fileFromConfig = Label(self.frame1, text=self.filePath, font=("Geneva", 12), background=bg)
+        self.fileFromConfig.place(relx=0.10, rely=0.60)
+
+        if self.filePath == "Выберите файл":
+            self.choose_btn = Button(self.frame1, text="Выбрать", background="#6200EE", foreground="#FFFFFF", bd=1,
+                                     font=("Geneva", 10),
+                                     command=self.choose_file)
+            self.choose_btn.place(relx=0.11, rely=0.75)
+
+            self.exit_btn = Button(self.frame1, text="Выход", background="#6200EE", foreground="#FFFFFF", bd=1,
+                                   font=("Geneva", 10),
+                                   command=self.close_app)
+            self.exit_btn.place(relx=0.70, rely=0.75)
+
+        else:
+
+            self.next_btn = Button(self.frame1, text="Начать", background="#6200EE", foreground="#FFFFFF", bd=1,
+                                   font=("Geneva", 10),
+                                   command=self.page_1)
+            self.next_btn.place(relx=0.11, rely=0.75)
+
+            self.choose_btn = Button(self.frame1, text="Другой файл", background="#6200EE", foreground="#FFFFFF", bd=1,
+                                     font=("Geneva", 10),
+                                     command=self.choose_file)
+            self.choose_btn.place(relx=0.21, rely=0.75)
+
+            self.exit_btn = Button(self.frame1, text="Выход", background="#6200EE", foreground="#FFFFFF", bd=1,
+                                   font=("Geneva", 10),
+                                   command=self.close_app)
+            self.exit_btn.place(relx=0.70, rely=0.75)
 
     def page_1(self):
+        try:
+            self.Excel = Parser(self.filePath)
+        except:
+            self.error()
+            self.start()
+        finally:
+            self.Excel = Parser(self.filePath)
+
         for i in self.master.winfo_children():
             i.destroy()
 
@@ -48,7 +86,7 @@ class app:
         self.text.place(relx=0.10, rely=0.15)
 
         self.choice_substance = Combobox(self.frame2, font=("Geneva", 10), width=25,
-                                         values=self.Ecxel.parse_substance())
+                                         values=self.Excel.parse_substance())
         self.choice_substance.place(relx=0.11, rely=0.30)
 
         self.next_btn = Button(self.frame2, text="Далее", background="#6200EE", foreground="#FFFFFF", bd=1,
@@ -65,7 +103,7 @@ class app:
         self.frame3 = Frame(self.master, width=700, height=200, background=bg)
         self.frame3.place(relx=0, rely=0)
 
-        if not (self.choice_substance in self.Ecxel.parse_substance()):
+        if not (self.choice_substance in self.Excel.parse_substance()):
             self.text = ttk.Label(self.frame3, text="Вещество не найдено", font=("Geneva", 14), background=bg)
             self.text.place(relx=0.10, rely=0.15)
 
@@ -80,7 +118,7 @@ class app:
             self.lvl1 = ttk.Label(self.frame3, text=".\n├──" + self.choice_substance, font=("Geneva", 9), background=bg)
             self.lvl1.place(relx=0.60, rely=0.20)
 
-            self.choice_env = ttk.Combobox(self.frame3, width=25, values=self.Ecxel.parse_env(self.choice_substance))
+            self.choice_env = ttk.Combobox(self.frame3, width=25, values=self.Excel.parse_env(self.choice_substance))
             self.choice_env.place(relx=0.11, rely=0.30)
 
             self.next_btn = Button(self.frame3, text="Далее", background="#6200EE", foreground="#FFFFFF", bd=1,
@@ -105,7 +143,7 @@ class app:
         self.lvl2 = ttk.Label(self.frame4, text="└──" + self.choice_env, font=("Geneva", 9), background=bg)
         self.lvl2.place(relx=0.65, rely=0.35)
 
-        self.choice_temp = ttk.Combobox(self.frame4, width=25, values=self.Ecxel.parse_temp(self.choice_env))
+        self.choice_temp = ttk.Combobox(self.frame4, width=25, values=self.Excel.parse_temp(self.choice_env))
         self.choice_temp.place(relx=0.11, rely=0.30)
 
         self.next_btn = Button(self.frame4, text="Далее", background="#6200EE", foreground="#FFFFFF", bd=1,
@@ -131,7 +169,7 @@ class app:
         self.lvl3 = ttk.Label(self.frame5, text="└──" + self.choice_temp, font=("Geneva", 9), background=bg)
         self.lvl3.place(relx=0.70, rely=0.44)
 
-        self.choice_press = ttk.Combobox(self.frame5, width=25, values=self.Ecxel.parse_press(self.choice_temp))
+        self.choice_press = ttk.Combobox(self.frame5, width=25, values=self.Excel.parse_press(self.choice_temp))
         self.choice_press.place(relx=0.11, rely=0.30)
 
         self.next_btn = Button(self.frame5, text="Далее", background="#6200EE", foreground="#FFFFFF", bd=1,
@@ -160,7 +198,7 @@ class app:
         self.lvl4 = ttk.Label(self.frame6, text="└──" + self.choice_press, font=("Geneva", 9), background=bg)
         self.lvl4.place(relx=0.75, rely=0.51)
 
-        self.choice_conc = ttk.Combobox(self.frame6, width=25, values=self.Ecxel.parse_conc(self.choice_press))
+        self.choice_conc = ttk.Combobox(self.frame6, width=25, values=self.Excel.parse_conc(self.choice_press))
         self.choice_conc.place(relx=0.11, rely=0.30)
 
         self.next_btn = Button(self.frame6, text="Далее", background="#6200EE", foreground="#FFFFFF", bd=1,
@@ -179,7 +217,7 @@ class app:
 
         widthText = 15
 
-        self.out = self.Ecxel.output_table(self.choice_conc)
+        self.out = self.Excel.output_table(self.choice_conc)
 
         self.substance_head = ttk.Label(self.frame, text="Вещество", font=("Geneva", 12), background=bg)
         self.substance_out = Text(self.frame,
@@ -239,7 +277,7 @@ class app:
         self.materials_head = ttk.Label(self.frame, text="Материалы", font=("Geneva", 12), background=bg)
         self.materials_out = Text(self.frame,
                                   font=("Geneva", 12), height=5, width=25, wrap=WORD)
-        self.materials_out.insert(INSERT, self.Ecxel.materials_text(str(self.out[5])))
+        self.materials_out.insert(INSERT, self.Excel.materials_text(str(self.out[5])))
         self.materials_out.configure(state='disabled', background=bgTable, selectbackground="#FFFFFF",
                                      selectforeground="Black", cursor="arrow", relief="groove")
         self.materials_head.grid(row=0, column=5)
@@ -258,11 +296,26 @@ class app:
                                command=self.close_app)
         self.exit_btn.place(relx=0.90, rely=0.1)
 
+    def error(self):
+        msg = "Файл не подходит"
+        mb.showerror("Ошибка", msg)
+
+    def choose_file(self):
+        self.filename = fd.askopenfilename(title="Открыть файл")
+        if self.filename:
+            with open("files/config.txt", "w+") as f:
+                f.write(str(self.filename))
+            self.start()
+
     def close_app(self):
         window.destroy()
 
 
 window = Tk()
 window.configure(background=bg)
+window.title("Database")
+photo = PhotoImage(file="files/icon_database.png")
+window.iconphoto(False, photo)
+
 app(window)
 window.mainloop()

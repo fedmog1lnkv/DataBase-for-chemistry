@@ -2,9 +2,8 @@ import openpyxl
 
 
 class Parser:
-    def __init__(self):
-        self.file = "DB.xlsx"
-        self.DB = openpyxl.load_workbook(self.file)
+    def __init__(self, filePath):
+        self.DB = openpyxl.load_workbook(filePath)
         self.sheet = self.DB['Главная таблица']
         self.output = []
         self.parse_substance()
